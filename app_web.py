@@ -5,7 +5,6 @@ import qrcode
 from io import BytesIO
 import sqlite3
 
-
 # --- 1. INISIALISASI DATABASE & SESSION STATE ---
 # (Kode init_db, seed_produk_awal Anda di sini)
 
@@ -16,6 +15,15 @@ if 'logged_in' not in st.session_state:
 
 # --- 2. CEK LOGIN (JIKA BELUM LOGIN, TAMPILKAN FORM & STOP) ---
 if not st.session_state['logged_in']:
+
+
+  # Membuat 3 kolom untuk menengahkan tampilan
+  col1, col2, col3 = st.columns([1, 2, 1])
+
+  with col2:
+    # Tampilkan Logo di dalam kolom tengah
+    st.image('rs_py.jpg', width=200)
+
   st.title('🔒 Login Kasir - Rangers Store')
 
   with st.form('login_form'):
@@ -24,7 +32,7 @@ if not st.session_state['logged_in']:
     submit = st.form_submit_button('Login')
 
     if submit:
-      if username == 'redflag' and password == 'rangers123':
+      if username == 'admin' and password == 'rangers123':
         st.session_state['logged_in'] = True
         st.success('Login Berhasil!')
         st.rerun()
