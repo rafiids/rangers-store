@@ -3,6 +3,111 @@ from datetime import datetime
 import pandas as pd
 import qrcode
 from io import BytesIO
+import sqlite3
+
+
+# --- 1. INISIALISASI DATABASE & SESSION STATE ---
+# (Kode init_db, seed_produk_awal Anda di sini)
+
+
+if 'logged_in' not in st.session_state:
+  st.session_state['logged_in'] = False
+
+
+# --- 2. CEK LOGIN (JIKA BELUM LOGIN, TAMPILKAN FORM & STOP) ---
+if not st.session_state['logged_in']:
+  st.title('🔒 Login Kasir - Rangers Store')
+
+  with st.form('login_form'):
+    username = st.text_input('Username')
+    password = st.text_input('Password', type='password')
+    submit = st.form_submit_button('Login')
+
+    if submit:
+      if username == 'redflag' and password == 'rangers123':
+        st.session_state['logged_in'] = True
+        st.success('Login Berhasil!')
+        st.rerun()
+      else:
+        st.error('Username atau Password salah!')
+
+  # PERINTAH INI SANGAT PENTING:
+  # Menghentikan jalannya aplikasi agar kode di bawahnya tidak ikut tampil sebelum login!
+  st.stop()
+
+
+# --- 3. KODE UTAMA APLIKASI (Hanya jalan kalau sudah login) ---
+# Tombol Logout di sidebar
+st.sidebar.write('---')
+if st.sidebar.button('🚪 Logout'):
+  st.session_state['logged_in'] = False
+  st.rerun()
+
+# Seluruh kode POS utama Anda (Navigasi, Katalog, Keranjang, dll) ada di bawah ini:
+st.title('Rangers Store POS')
+# ... dan seterusnya ...
+
+
+# --- Fungsionalitas Database SQLite ---
+def init_db():
+    conn = sqlite3.connect('toko.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS produk (
+            id TEXT PRIMARY KEY,
+            nama TEXT,
+            kategori TEXT,
+            harga REAL,
+            stok INTEGER
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS transaksi (
+            id_transaksi INTEGER PRIMARY KEY AUTOINCREMENT,
+            tanggal TEXT,
+            total REAL,
+            detail TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+# -------------------------------------
+def seed_produk_awal():
+  conn = sqlite3.connect('toko.db')
+  cursor = conn.cursor()
+
+  
+  # Cek apakah tabel produk masih kosong
+  cursor.execute('SELECT COUNT(*) FROM produk')
+  count = cursor.fetchone()[0]
+
+  if count == 0:
+    produk_awal = [
+        ('P001', 'Jersey Home Rangers', 'Jersey', 150000, 10),
+        ('P002', 'Jersey Away Rangers', 'Jersey', 150000, 8),
+        ('P003', 'Tas Ransel Laptop 15 Inch', 'Aksesoris', 175000, 12),
+        ('P004', 'Smartwatch Fitness', 'Elektronik', 450000, 3),
+        ('P005', 'Topi Baseball Polos', 'Aksesoris', 45000, 20),
+    ]
+    cursor.executemany(
+        'INSERT INTO produk (id, nama, kategori, harga, stok) VALUES (?, ?,'
+        ' ?, ?, ?)',
+        produk_awal,
+    )
+    conn.commit()
+
+  conn.close()
+
+
+seed_produk_awal()
+
+# Ambil data produk dari database SQLite
+conn = sqlite3.connect('toko.db')
+df_produk = pd.read_sql('SELECT * FROM produk', conn)
+conn.close()
+
 
 # ---------------------------------------------------------
 # 1. KONFIGURASI HALAMAN & CUSTOM CSS
