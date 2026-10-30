@@ -32,7 +32,7 @@ if not st.session_state['logged_in']:
     submit = st.form_submit_button('Login')
 
     if submit:
-      if username == 'admin' and password == 'rangers123':
+      if username == 'redflag' and password == 'rangers123':
         st.session_state['logged_in'] = True
         st.success('Login Berhasil!')
         st.rerun()
